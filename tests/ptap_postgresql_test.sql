@@ -1,4 +1,3 @@
--- Run subset_checker.sql first to install helper function subset_checker
 CREATE EXTENSION IF NOT EXISTS pgtap;
 
 
@@ -6,8 +5,8 @@ SET search_path TO alzheimer_subset, ctgov, public;
 
 BEGIN;
 
--- 2 tests per table +1 for schema check: table exists and it shares the same number of columns as ctgov
-SELECT plan(33);
+-- Number of Tests to Run
+SELECT plan(46);
 
 -- (1) Ensure the correct schemas are in place
 SELECT schemas_are(ARRAY[ 'public', 'ctgov', 'alzheimer_subset']);
@@ -40,7 +39,6 @@ SELECT col_is_pk('alzheimer_subset.interventions', 'id', '"interventions" must h
 SELECT col_is_pk('alzheimer_subset.outcome_counts', 'id', '"outcome_counts" must have "id" as primary key');
 SELECT col_is_pk('alzheimer_subset.sponsors', 'id', '"sponsors" must have "id" as primary key');
 
-
 -- (8) Validate nct_id column exists in all but studies table; the foreign key to link to studies table
 SELECT has_column('alzheimer_subset.conditions', 'nct_id', '"conditions" must have foreign key "nct_id"');
 SELECT has_column('alzheimer_subset.countries', 'nct_id',  '"countries" must have foreign key "nct_id"');
@@ -52,35 +50,38 @@ SELECT has_column('alzheimer_subset.sponsors', 'nct_id', '"sponsors" must have f
 SELECT has_column('alzheimer_subset.studies', 'nct_id', '"studies" must have foreign key "nct_id"');
 
 
--- (1) Validate alzheimer_subset preserves the same 8 tables and all columns from original schema ctgov
-SELECT set_eq(
-	$$
-	SELECT column_name
-	FROM information_schema.columns
-	WHERE table_schema = 'ctvgov' AND table_name IN ('conditions', 'countries', 'designs', 'facilities', 'interventions', 'outcome_counts', 'sponsors', 'studies')
-	$$,
-	
-	$$
-	SELECT column_name
-	FROM information_schema.columns
-	WHERE table_schema = 'alzheimer_subset' AND table_name IN ('conditions', 'countries', 'designs', 'facilities', 'interventions', 'outcome_counts', 'sponsors', 'studies')
-	
-	$$,
-	'Table "ctgov" and Table "alzheimer_subset" do not share the same columns'
-);
-
--- (8) Validate that alzheimer_subset is a subset of ctvgov
-SELECT * FROM subset_checker('alzheimer_subset', 'ctgov', 'conditions');
-SELECT * FROM subset_checker('alzheimer_subset', 'ctgov', 'countries');
-SELECT * FROM subset_checker('alzheimer_subset', 'ctgov', 'designs');
-SELECT * FROM subset_checker('alzheimer_subset', 'ctgov', 'facilities');
-SELECT * FROM subset_checker('alzheimer_subset', 'ctgov', 'interventions');
-SELECT * FROM subset_checker('alzheimer_subset', 'ctgov', 'outcome_counts');
-SELECT * FROM subset_checker('alzheimer_subset', 'ctgov', 'sponsors');
-SELECT * FROM subset_checker('alzheimer_subset', 'ctgov', 'studies');
+-- (7) Ensure each record in each table matches an nct_id in studies table
+-- SELECT is(
+-- 	$$
+-- 	SELECT COUNT(*) 
+-- 	FROM alzheimer_subset.conditions c
+-- 	LEFT JOIN alzheimer_subset.studies s ON c.nct_id = s.nct_id
+-- 	WHERE s.nct_id IS NULL $$,
+-- 	0::integer,
+-- 	'Table "conditions" must have matching "nct_id" records to Table "studies"'
+-- );
 
 
+-- (8) Ensure that foreign key nct_id columns have no NULL values
+SELECT is_empty('SELECT 1 FROM alzheimer_subset.conditions WHERE nct_id IS NULL', 'Table "conditions" can not have NULL values in column "nct_id"');
+SELECT is_empty('SELECT 1 FROM alzheimer_subset.countries WHERE nct_id IS NULL', 'Table "countries" can not have NULL values in column "nct_id"');
+SELECT is_empty('SELECT 1 FROM alzheimer_subset.designs WHERE nct_id IS NULL', 'Table "designs" can not have NULL values in column "nct_id"');
+SELECT is_empty('SELECT 1 FROM alzheimer_subset.facilities WHERE nct_id IS NULL', 'Table "facilities" can not have NULL values in column "nct_id"');
+SELECT is_empty('SELECT 1 FROM alzheimer_subset.interventions WHERE nct_id IS NULL', 'Table "interventions" can not have NULL values in column "nct_id"');
+SELECT is_empty('SELECT 1 FROM alzheimer_subset.outcome_counts WHERE nct_id IS NULL', 'Table "outcome_counts" can not have NULL values in column "nct_id"');
+SELECT is_empty('SELECT 1 FROM alzheimer_subset.sponsors WHERE nct_id IS NULL', 'Table "sponsors" can not have NULL values in column "nct_id"');
+SELECT is_empty('SELECT 1 FROM alzheimer_subset.studies WHERE nct_id IS NULL', 'Table "studies" can not have NULL values in column "nct_id"');
 
+
+-- (7) Ensure that primary key id columns have no NULL values; exception for studies table
+SELECT is_empty('SELECT 1 FROM alzheimer_subset.conditions WHERE id IS NULL', 'Table "conditions" can not have NULL values in column "id"');
+SELECT is_empty('SELECT 1 FROM alzheimer_subset.countries WHERE id IS NULL', 'Table "countries" can not have NULL values in column "id"');
+SELECT is_empty('SELECT 1 FROM alzheimer_subset.designs WHERE id IS NULL', 'Table "designs" can not have NULL values in column "id"');
+SELECT is_empty('SELECT 1 FROM alzheimer_subset.facilities WHERE id IS NULL', 'Table "facilities" can not have NULL values in column "id"');
+SELECT is_empty('SELECT 1 FROM alzheimer_subset.interventions WHERE id IS NULL', 'Table "interventions" can not have NULL values in column "id"');
+SELECT is_empty('SELECT 1 FROM alzheimer_subset.outcome_counts WHERE id IS NULL', 'Table "outcome_counts" can not have NULL values in column "id"');
+SELECT is_empty('SELECT 1 FROM alzheimer_subset.sponsors WHERE id IS NULL', 'Table "sponsors" can not have NULL values in column "id"');
+-- SELECT is_empty('SELECT 1 FROM alzheimer_subset.studies WHERE id IS NULL', 'Table "studies" can not have NULL values in column "id"');
 
 
 

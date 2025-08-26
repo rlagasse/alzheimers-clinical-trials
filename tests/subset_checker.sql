@@ -15,13 +15,15 @@ DECLARE
 BEGIN
     -- Count how many primary keys that are in alzheimer_subset that aren't in ctgov; should eqal 0
     EXECUTE format(
-        'SELECT COUNT(*) FROM %I.%I AS keys
-         WHERE keys.id NOT IN (SELECT id FROM %I.%I)',
+		 'SELECT COUNT(*) FROM %I.%I AS keys
+		 WHERE NOT EXISTS 
+		 (SELECT 1 FROM %I.%I AS all_keys WHERE all_keys.id = keys.id)'
+		 ,
         alzheimer_subset, table_of_interest,
-        ctgov, table_of_interest
-    ) INTO key_count;
+        ctgov, table_of_interest) 
+		INTO key_count;
 
-    -- Return a single pTAP test result
+    -- Return a single pTAP test result for each table
     RETURN QUERY
     SELECT is(
         key_count,
