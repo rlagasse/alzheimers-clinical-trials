@@ -1,3 +1,4 @@
+-- Runtime: 51msec
 CREATE EXTENSION IF NOT EXISTS pgtap;
 
 
@@ -48,18 +49,6 @@ SELECT has_column('alzheimer_subset.interventions', 'nct_id', '"interventions" m
 SELECT has_column('alzheimer_subset.outcome_counts', 'nct_id', '"outcome_counts" must have foreign key "nct_id"');
 SELECT has_column('alzheimer_subset.sponsors', 'nct_id', '"sponsors" must have foreign key "nct_id"');
 SELECT has_column('alzheimer_subset.studies', 'nct_id', '"studies" must have foreign key "nct_id"');
-
-
--- (7) Ensure each record in each table matches an nct_id in studies table
--- SELECT is(
--- 	$$
--- 	SELECT COUNT(*) 
--- 	FROM alzheimer_subset.conditions c
--- 	LEFT JOIN alzheimer_subset.studies s ON c.nct_id = s.nct_id
--- 	WHERE s.nct_id IS NULL $$,
--- 	0::integer,
--- 	'Table "conditions" must have matching "nct_id" records to Table "studies"'
--- );
 
 
 -- (8) Ensure that foreign key nct_id columns have no NULL values

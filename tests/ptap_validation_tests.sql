@@ -1,4 +1,5 @@
--- Run subset_checker.sql first to install helper function subset_checker
+-- Run subset_checker_function.sql first to install helper function subset_checker
+-- Runtime: 127 msec
 CREATE EXTENSION IF NOT EXISTS pgtap;
 
 SET search_path TO alzheimer_subset, ctgov, public;
@@ -6,7 +7,7 @@ SET search_path TO alzheimer_subset, ctgov, public;
 BEGIN;
 
 -- Number of Tests to Run
-SELECT plan(9);
+SELECT plan(16);
 
 
 -- (1) Validate alzheimer_subset preserves the same 8 tables and all columns from original schema ctgov
