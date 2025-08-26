@@ -1,7 +1,6 @@
+-- Run subset_checker.sql first to install helper function subset_checker
 CREATE EXTENSION IF NOT EXISTS pgtap;
 
--- table subset checker helper function, between ctgov and alzheimer_subset
-\i subset_checker.sql
 
 SET search_path TO alzheimer_subset, ctgov, public;
 
@@ -23,17 +22,26 @@ SELECT has_table('alzheimer_subset.outcome_counts', 'subset must have table "out
 SELECT has_table('alzheimer_subset.sponsors', 'subset must have table "sponsors"');
 SELECT has_table('alzheimer_subset.studies', 'subset must have table "studies"');
 
--- (8) studies table PK is nct_id, all other tables have id as PK but also have nct_id to properly link to studies
+-- (7) All tables (besides studies) should have a primary key to link to studies
+SELECT has_pk('alzheimer_subset', 'conditions', '"conditions" must have a primary key');
+SELECT has_pk('alzheimer_subset', 'countries',  '"countries" must have a primary key');
+SELECT has_pk('alzheimer_subset', 'designs', '"designs" must have a primary key');
+SELECT has_pk('alzheimer_subset', 'facilities', '"facilities" must have a primary key');
+SELECT has_pk('alzheimer_subset', 'interventions', '"interventions" must have a primary key');
+SELECT has_pk('alzheimer_subset', 'outcome_counts', '"outcome_counts" must have a primary key');
+SELECT has_pk('alzheimer_subset', 'sponsors', '"sponsors" must have a primary key');
+
+-- (7) studies table PK is nct_id, all other tables have id as PK but also have nct_id to properly link to studies
+SELECT col_is_pk('alzheimer_subset.conditions', 'id', '"conditions" must have "id" as primary key');
 SELECT col_is_pk('alzheimer_subset.countries', 'id', '"countries" must have "id" as primary key');
 SELECT col_is_pk('alzheimer_subset.designs', 'id', '"designs" must have "id" as primary key');
 SELECT col_is_pk('alzheimer_subset.facilities', 'id', '"facilities" must have "id" as primary key');
 SELECT col_is_pk('alzheimer_subset.interventions', 'id', '"interventions" must have "id" as primary key');
 SELECT col_is_pk('alzheimer_subset.outcome_counts', 'id', '"outcome_counts" must have "id" as primary key');
 SELECT col_is_pk('alzheimer_subset.sponsors', 'id', '"sponsors" must have "id" as primary key');
-SELECT col_is_pk('alzheimer_subset.studies', 'nct_id', '"studies" must have "nct_id" as primary key');
 
 
--- (7) Validate nct_id column exists in all but studies table; the foreign key to link to studies table
+-- (8) Validate nct_id column exists in all but studies table; the foreign key to link to studies table
 SELECT has_column('alzheimer_subset.conditions', 'nct_id', '"conditions" must have foreign key "nct_id"');
 SELECT has_column('alzheimer_subset.countries', 'nct_id',  '"countries" must have foreign key "nct_id"');
 SELECT has_column('alzheimer_subset.designs', 'nct_id', '"designs" must have foreign key "nct_id"');
@@ -41,6 +49,7 @@ SELECT has_column('alzheimer_subset.facilities', 'nct_id', '"facilities" must ha
 SELECT has_column('alzheimer_subset.interventions', 'nct_id', '"interventions" must have foreign key "nct_id"');
 SELECT has_column('alzheimer_subset.outcome_counts', 'nct_id', '"outcome_counts" must have foreign key "nct_id"');
 SELECT has_column('alzheimer_subset.sponsors', 'nct_id', '"sponsors" must have foreign key "nct_id"');
+SELECT has_column('alzheimer_subset.studies', 'nct_id', '"studies" must have foreign key "nct_id"');
 
 
 -- (1) Validate alzheimer_subset preserves the same 8 tables and all columns from original schema ctgov
@@ -70,17 +79,10 @@ SELECT * FROM subset_checker('alzheimer_subset', 'ctgov', 'outcome_counts');
 SELECT * FROM subset_checker('alzheimer_subset', 'ctgov', 'sponsors');
 SELECT * FROM subset_checker('alzheimer_subset', 'ctgov', 'studies');
 
--- SELECT is(
--- 	(SELECT COUNT(*)::integer
--- 	FROM 
--- 	(
--- 	SELECT * FROM alzheimer_subset.studies
--- 	EXCEPT
--- 	SELECT * FROM ctgov.studies )
--- 	),
--- 	0,
--- 	'Schema "alzheimer_subset" Table "studies" is not a subset of Schema "ctgov" Table "studies"'
--- );
+
+
+
+
 
 SELECT pass('All tests passed');
 SELECT fail('Not all tests passed');
