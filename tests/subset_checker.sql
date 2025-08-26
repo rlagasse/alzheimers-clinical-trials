@@ -1,8 +1,10 @@
 -- Subset checker help function. Used on all tables but studies as id column should be the primary key in all.
 CREATE OR REPLACE FUNCTION subset_checker (
-    alzheimer_subset text,
-    ctgov text,
-    table_of_interest text
+	subset text, 
+    entireset text,
+	subset_table text,
+    entireset_table text,
+	col text
 )
 
 -- Return as test message for pass/fail
@@ -13,14 +15,14 @@ DECLARE
     key_count integer;
 	
 BEGIN
-    -- Count how many primary keys that are in alzheimer_subset that aren't in ctgov; should eqal 0
+    -- Count how many primary keys that are in alzheimer_subset (subset) that aren't in ctgov (full set); should equal 0
     EXECUTE format(
 		 'SELECT COUNT(*) FROM %I.%I AS keys
 		 WHERE NOT EXISTS 
-		 (SELECT 1 FROM %I.%I AS all_keys WHERE all_keys.id = keys.id)'
+		 (SELECT 1 FROM %I.%I AS all_keys WHERE all_keys.%I = keys.%I)'
 		 ,
-        alzheimer_subset, table_of_interest,
-        ctgov, table_of_interest) 
+        subset, subset_table,
+        entireset, entireset_table, col, col) 
 		INTO key_count;
 
     -- Return a single pTAP test result for each table
@@ -28,7 +30,7 @@ BEGIN
     SELECT is(
         key_count,
         0::integer,
-        format('All records (checked by primary keys) in Schema %I Table %I exist in Schema %I Table %I', alzheimer_subset, table_of_interest, ctgov, table_of_interest)
+        format('All records checked by column %I in Schema %I Table %I exists in Schema %I Table %I', col, subset, subset_table, entireset, entireset_table)
     );
 
 END;
