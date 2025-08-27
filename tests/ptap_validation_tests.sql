@@ -24,7 +24,7 @@ SELECT set_eq(
 	WHERE table_schema = 'alzheimer_subset' AND table_name IN ('conditions', 'countries', 'designs', 'facilities', 'interventions', 'outcome_counts', 'sponsors', 'studies')
 	
 	$$,
-	'Table "ctgov" and Table "alzheimer_subset" do not share the same columns'
+	'Table "ctgov" and Table "alzheimer_subset" do not share the same table/columns'
 );
 
 -- (8) Validate that each table in alzheimer_subset is a subset of the table in ctvgov, based on primary key id.

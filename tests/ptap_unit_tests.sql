@@ -88,7 +88,18 @@ SELECT col_is_fk('alzheimer_subset.sponsors', 'nct_id', '"sponsors" must have "n
 SELECT col_isnt_fk('alzheimer_subset.studies', 'nct_id', '"studies" not have "nct_id" as a foreign key');
 
 
--- (8) Ensure that foreign key nct_id columns have no NULL values
+-- (8) Ensure that primary key id/nct_id columns have no NULL values
+SELECT is_empty('SELECT 1 FROM alzheimer_subset.conditions WHERE id IS NULL', 'Table "conditions" can not have NULL values in column "nct_id"');
+SELECT is_empty('SELECT 1 FROM alzheimer_subset.countries WHERE id IS NULL', 'Table "countries" can not have NULL values in column "nct_id"');
+SELECT is_empty('SELECT 1 FROM alzheimer_subset.designs WHERE id IS NULL', 'Table "designs" can not have NULL values in column "nct_id"');
+SELECT is_empty('SELECT 1 FROM alzheimer_subset.facilities WHERE id IS NULL', 'Table "facilities" can not have NULL values in column "nct_id"');
+SELECT is_empty('SELECT 1 FROM alzheimer_subset.interventions WHERE id IS NULL', 'Table "interventions" can not have NULL values in column "nct_id"');
+SELECT is_empty('SELECT 1 FROM alzheimer_subset.outcome_counts WHERE id IS NULL', 'Table "outcome_counts" can not have NULL values in column "nct_id"');
+SELECT is_empty('SELECT 1 FROM alzheimer_subset.sponsors WHERE id IS NULL', 'Table "sponsors" can not have NULL values in column "nct_id"');
+SELECT is_empty('SELECT 1 FROM alzheimer_subset.studies WHERE nct_id IS NULL', 'Table "studies" can not have NULL values in column "nct_id"');
+
+
+-- (7) Ensure that foreign key nct_id columns have no NULL values
 SELECT is_empty('SELECT 1 FROM alzheimer_subset.conditions WHERE nct_id IS NULL', 'Table "conditions" can not have NULL values in column "nct_id"');
 SELECT is_empty('SELECT 1 FROM alzheimer_subset.countries WHERE nct_id IS NULL', 'Table "countries" can not have NULL values in column "nct_id"');
 SELECT is_empty('SELECT 1 FROM alzheimer_subset.designs WHERE nct_id IS NULL', 'Table "designs" can not have NULL values in column "nct_id"');
@@ -96,18 +107,6 @@ SELECT is_empty('SELECT 1 FROM alzheimer_subset.facilities WHERE nct_id IS NULL'
 SELECT is_empty('SELECT 1 FROM alzheimer_subset.interventions WHERE nct_id IS NULL', 'Table "interventions" can not have NULL values in column "nct_id"');
 SELECT is_empty('SELECT 1 FROM alzheimer_subset.outcome_counts WHERE nct_id IS NULL', 'Table "outcome_counts" can not have NULL values in column "nct_id"');
 SELECT is_empty('SELECT 1 FROM alzheimer_subset.sponsors WHERE nct_id IS NULL', 'Table "sponsors" can not have NULL values in column "nct_id"');
-SELECT is_empty('SELECT 1 FROM alzheimer_subset.studies WHERE nct_id IS NULL', 'Table "studies" can not have NULL values in column "nct_id"');
-
-
--- (7) Ensure that primary key id columns have no NULL values; exception for studies table
-SELECT is_empty('SELECT 1 FROM alzheimer_subset.conditions WHERE id IS NULL', 'Table "conditions" can not have NULL values in column "id"');
-SELECT is_empty('SELECT 1 FROM alzheimer_subset.countries WHERE id IS NULL', 'Table "countries" can not have NULL values in column "id"');
-SELECT is_empty('SELECT 1 FROM alzheimer_subset.designs WHERE id IS NULL', 'Table "designs" can not have NULL values in column "id"');
-SELECT is_empty('SELECT 1 FROM alzheimer_subset.facilities WHERE id IS NULL', 'Table "facilities" can not have NULL values in column "id"');
-SELECT is_empty('SELECT 1 FROM alzheimer_subset.interventions WHERE id IS NULL', 'Table "interventions" can not have NULL values in column "id"');
-SELECT is_empty('SELECT 1 FROM alzheimer_subset.outcome_counts WHERE id IS NULL', 'Table "outcome_counts" can not have NULL values in column "id"');
-SELECT is_empty('SELECT 1 FROM alzheimer_subset.sponsors WHERE id IS NULL', 'Table "sponsors" can not have NULL values in column "id"');
--- SELECT is_empty('SELECT 1 FROM alzheimer_subset.studies WHERE id IS NULL', 'Table "studies" can not have NULL values in column "id"');
 
 
 
