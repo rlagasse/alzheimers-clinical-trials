@@ -89,12 +89,38 @@ JOIN alzheimer_subset.studies AS s
 
 
 
--- Declare primary keys in all but studies table to match ctgov
-ALTER TABLE alzheimer_subset.conditions ADD PRIMARY KEY (id);
-ALTER TABLE alzheimer_subset.countries ADD PRIMARY KEY (id);
-ALTER TABLE alzheimer_subset.designs ADD PRIMARY KEY (id);
-ALTER TABLE alzheimer_subset.facilities ADD PRIMARY KEY (id);
-ALTER TABLE alzheimer_subset.interventions ADD PRIMARY KEY (id);
-ALTER TABLE alzheimer_subset.outcome_counts ADD PRIMARY KEY (id);
-ALTER TABLE alzheimer_subset.sponsors ADD PRIMARY KEY (id);
+-- Creating constraints:
+-- Declare primary keys: nct_id in studies table, id in the rest
+ALTER TABLE alzheimer_subset.conditions ADD CONSTRAINT conditions_pkey PRIMARY KEY (id);
+ALTER TABLE alzheimer_subset.countries ADD CONSTRAINT countries_pkey PRIMARY KEY (id);
+ALTER TABLE alzheimer_subset.designs ADD CONSTRAINT designs_pkey PRIMARY KEY (id);
+ALTER TABLE alzheimer_subset.facilities ADD CONSTRAINT facilities_pkey PRIMARY KEY (id);
+ALTER TABLE alzheimer_subset.interventions ADD CONSTRAINT interventions_pkey PRIMARY KEY (id);
+ALTER TABLE alzheimer_subset.outcome_counts ADD CONSTRAINT outcome_counts_pkey PRIMARY KEY (id);
+ALTER TABLE alzheimer_subset.sponsors ADD CONSTRAINT sponsors_pkey PRIMARY KEY (id);
+ALTER TABLE alzheimer_subset.studies ADD CONSTRAINT studies_pkey PRIMARY KEY (nct_id);
+
+
+-- Declare foreign keys: nct_id in all tables to reference studies table
+ALTER TABLE alzheimer_subset.conditions ADD CONSTRAINT conditions_fkey FOREIGN KEY (nct_id) REFERENCES alzheimer_subset.studies(nct_id) ON DELETE CASCADE;
+ALTER TABLE alzheimer_subset.countries ADD CONSTRAINT countries_fkey FOREIGN KEY (nct_id) REFERENCES alzheimer_subset.studies(nct_id) ON DELETE CASCADE;
+ALTER TABLE alzheimer_subset.designs ADD CONSTRAINT designs_fkey FOREIGN KEY (nct_id) REFERENCES alzheimer_subset.studies(nct_id) ON DELETE CASCADE;
+ALTER TABLE alzheimer_subset.facilities ADD CONSTRAINT facilities_fkey FOREIGN KEY (nct_id) REFERENCES alzheimer_subset.studies(nct_id) ON DELETE CASCADE;
+ALTER TABLE alzheimer_subset.interventions ADD CONSTRAINT interventions_fkey FOREIGN KEY (nct_id) REFERENCES alzheimer_subset.studies(nct_id) ON DELETE CASCADE;
+ALTER TABLE alzheimer_subset.outcome_counts ADD CONSTRAINT outcome_counts_fkey FOREIGN KEY (nct_id) REFERENCES alzheimer_subset.studies(nct_id) ON DELETE CASCADE;
+ALTER TABLE alzheimer_subset.sponsors ADD CONSTRAINT sponsors_fkey FOREIGN KEY (nct_id) REFERENCES alzheimer_subset.studies(nct_id) ON DELETE CASCADE;
+
+-- Ensure nct_id is NOT NULL in all tables
+ALTER TABLE alzheimer_subset.conditions ALTER COLUMN nct_id SET NOT NULL;
+ALTER TABLE alzheimer_subset.countries ALTER COLUMN nct_id SET NOT NULL;
+ALTER TABLE alzheimer_subset.designs ALTER COLUMN nct_id SET NOT NULL;
+ALTER TABLE alzheimer_subset.facilities ALTER COLUMN nct_id SET NOT NULL;
+ALTER TABLE alzheimer_subset.interventions ALTER COLUMN nct_id SET NOT NULL;
+ALTER TABLE alzheimer_subset.outcome_counts ALTER COLUMN nct_id SET NOT NULL;
+ALTER TABLE alzheimer_subset.sponsors ALTER COLUMN nct_id SET NOT NULL;
+ALTER TABLE alzheimer_subset.studies ALTER COLUMN nct_id SET NOT NULL;
+
+
+
+
 
