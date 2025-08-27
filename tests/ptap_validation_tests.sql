@@ -35,8 +35,7 @@ SELECT * FROM subset_checker('alzheimer_subset', 'ctgov', 'facilities', 'facilit
 SELECT * FROM subset_checker('alzheimer_subset', 'ctgov', 'interventions', 'interventions', 'id');
 SELECT * FROM subset_checker('alzheimer_subset', 'ctgov', 'outcome_counts', 'outcome_counts', 'id');
 SELECT * FROM subset_checker('alzheimer_subset', 'ctgov', 'sponsors', 'sponsors', 'id');
--- SELECT * FROM subset_checker('alzheimer_subset', 'ctgov', 'studies', 'studies', 'id');
--- Note: studies has no public key as it uses nct_id as per https://aact.ctti-clinicaltrials.org/schema#idInformation
+SELECT * FROM subset_checker('alzheimer_subset', 'ctgov', 'studies', 'studies', 'nct_id');
 
 
 -- (7) Check each record in each table in alzheimer_subset matches an nct_id in alzheimer_subset's studies table

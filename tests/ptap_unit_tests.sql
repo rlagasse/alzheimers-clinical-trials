@@ -7,12 +7,13 @@ SET search_path TO alzheimer_subset, ctgov, public;
 BEGIN;
 
 -- Number of Tests to Run
-SELECT plan(47);
+SELECT plan(71);
 
 -- (1) Ensure the correct schemas are in place
 SELECT schemas_are(ARRAY[ 'public', 'ctgov', 'alzheimer_subset']);
+
  
--- (9) Validate all 8 necessary tables exist
+-- (9) Validate all 8 necessary tables exist, and only 8 tables exist
 SELECT has_table('alzheimer_subset.conditions', 'subset must have table "conditions"');
 SELECT has_table('alzheimer_subset.countries', 'subset must have table "countries"');
 SELECT has_table('alzheimer_subset.designs', 'subset must have table "designs"');
@@ -23,16 +24,40 @@ SELECT has_table('alzheimer_subset.sponsors', 'subset must have table "sponsors"
 SELECT has_table('alzheimer_subset.studies', 'subset must have table "studies"');
 SELECT is((SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'alzheimer_subset' AND table_type = 'BASE TABLE')::integer, 8::integer, 'Schema "alzheimer_subset" should only have 8 tables');
 
--- (7) All tables (besides studies) should have a primary key to link to studies
+
+-- (8) Validate nct_id column exists for all tables to link all child tables to studies
+SELECT has_column('alzheimer_subset.conditions', 'nct_id', '"conditions" must have column "nct_id" as it is the child table to "studies"');
+SELECT has_column('alzheimer_subset.countries', 'nct_id',  '"countries" must have column "nct_id" as it is the child table to "studies"');
+SELECT has_column('alzheimer_subset.designs', 'nct_id', '"designs" must have column "nct_id" as it is the child table to "studies"');
+SELECT has_column('alzheimer_subset.facilities', 'nct_id', '"facilities" must have column "nct_id" as it is the child table to "studies"');
+SELECT has_column('alzheimer_subset.interventions', 'nct_id', '"interventions" must have column "nct_id" as it is the child table to "studies"');
+SELECT has_column('alzheimer_subset.outcome_counts', 'nct_id', '"outcome_counts" must have column "nct_id" as it is the child table to "studies"');
+SELECT has_column('alzheimer_subset.sponsors', 'nct_id', '"sponsors" must have column "nct_id" as it is the child table to "studies"');
+SELECT has_column('alzheimer_subset.studies', 'nct_id', '"studies" must have column "nct_id" as it is the child table to "studies"');
+
+
+-- (7) Validate id column exists for all tables besides studies
+SELECT has_column('alzheimer_subset.conditions', 'id', '"conditions" must have column "id" as it is the primary key');
+SELECT has_column('alzheimer_subset.countries', 'id',  '"countries" must have column "id" as it is the primary key');
+SELECT has_column('alzheimer_subset.designs', 'id', '"designs" must have column "id" as it is the primary key');
+SELECT has_column('alzheimer_subset.facilities', 'id', '"facilities" must have column "id" as it is the primary key');
+SELECT has_column('alzheimer_subset.interventions', 'id', '"interventions" must have column "id" as it is the primary key');
+SELECT has_column('alzheimer_subset.outcome_counts', 'id', '"outcome_counts" must have column "id" as it is the primary key');
+SELECT has_column('alzheimer_subset.sponsors', 'id', '"sponsors" must have column "id" as it is the primary key');
+SELECT hasnt_column('alzheimer_subset.studies', 'id', '"studies" must not have column "id"');
+
+
+-- (8) All tables should have a primary key
 SELECT has_pk('alzheimer_subset', 'conditions', '"conditions" must have a primary key');
 SELECT has_pk('alzheimer_subset', 'countries',  '"countries" must have a primary key');
 SELECT has_pk('alzheimer_subset', 'designs', '"designs" must have a primary key');
 SELECT has_pk('alzheimer_subset', 'facilities', '"facilities" must have a primary key');
 SELECT has_pk('alzheimer_subset', 'interventions', '"interventions" must have a primary key');
-SELECT has_pk('alzheimer_subset', 'outcome_counts', '"outcome_counts" must have a primary key');
-SELECT has_pk('alzheimer_subset', 'sponsors', '"sponsors" must have a primary key');
+SELECT has_pk('alzheimer_subset', 'outcome_counts', '"outcome_counts" must have a primary key ""');
+SELECT has_pk('alzheimer_subset', 'nct_id', '"studies" must have a primary key');
 
--- (7) studies table PK is nct_id, all other tables have id as PK but also have nct_id to properly link to studies
+
+-- (8) Validate that all tables have (id) as their primary key, besides studies table which has (nct_id)
 SELECT col_is_pk('alzheimer_subset.conditions', 'id', '"conditions" must have "id" as primary key');
 SELECT col_is_pk('alzheimer_subset.countries', 'id', '"countries" must have "id" as primary key');
 SELECT col_is_pk('alzheimer_subset.designs', 'id', '"designs" must have "id" as primary key');
@@ -40,16 +65,27 @@ SELECT col_is_pk('alzheimer_subset.facilities', 'id', '"facilities" must have "i
 SELECT col_is_pk('alzheimer_subset.interventions', 'id', '"interventions" must have "id" as primary key');
 SELECT col_is_pk('alzheimer_subset.outcome_counts', 'id', '"outcome_counts" must have "id" as primary key');
 SELECT col_is_pk('alzheimer_subset.sponsors', 'id', '"sponsors" must have "id" as primary key');
+SELECT col_is_pk('alzheimer_subset.studies', 'nct_id', '"studies" must have "nct_id" as its primary key');
 
--- (8) Validate nct_id column exists in all but studies table; the foreign key to link to studies table
-SELECT has_column('alzheimer_subset.conditions', 'nct_id', '"conditions" must have foreign key "nct_id"');
-SELECT has_column('alzheimer_subset.countries', 'nct_id',  '"countries" must have foreign key "nct_id"');
-SELECT has_column('alzheimer_subset.designs', 'nct_id', '"designs" must have foreign key "nct_id"');
-SELECT has_column('alzheimer_subset.facilities', 'nct_id', '"facilities" must have foreign key "nct_id"');
-SELECT has_column('alzheimer_subset.interventions', 'nct_id', '"interventions" must have foreign key "nct_id"');
-SELECT has_column('alzheimer_subset.outcome_counts', 'nct_id', '"outcome_counts" must have foreign key "nct_id"');
-SELECT has_column('alzheimer_subset.sponsors', 'nct_id', '"sponsors" must have foreign key "nct_id"');
-SELECT has_column('alzheimer_subset.studies', 'nct_id', '"studies" must have foreign key "nct_id"');
+-- (8) All tables, besides studies, should have a foreign key
+SELECT has_fk('alzheimer_subset', 'conditions', '"conditions" must have a foreign key');
+SELECT has_fk('alzheimer_subset', 'countries',  '"countries" must have a foreign key');
+SELECT has_fk('alzheimer_subset', 'designs', '"designs" must have a foreign key');
+SELECT has_fk('alzheimer_subset', 'facilities', '"facilities" must have a foreign key');
+SELECT has_fk('alzheimer_subset', 'interventions', '"interventions" must have a foreign key');
+SELECT has_fk('alzheimer_subset', 'outcome_counts', '"outcome_counts" must have a foreign key ""');
+SELECT hasnt_fk('alzheimer_subset', 'nct_id', '"studies" must have no key');
+
+
+-- -- (7) validate that the nct_id column is a foreign key in all tables but studies
+SELECT col_is_fk('alzheimer_subset.conditions', 'nct_id', '"conditions" must have "nct_id" as primary key');
+SELECT col_is_fk('alzheimer_subset.countries', 'nct_id', '"countries" must have "nct_id" as primary key');
+SELECT col_is_fk('alzheimer_subset.designs', 'nct_id', '"designs" must have "nct_id" as primary key');
+SELECT col_is_fk('alzheimer_subset.facilities', 'nct_id', '"facilities" must have "nct_id" as primary key');
+SELECT col_is_fk('alzheimer_subset.interventions', 'nct_id', '"interventions" must have "nct_id" as primary key');
+SELECT col_is_fk('alzheimer_subset.outcome_counts', 'nct_id', '"outcome_counts" must have "nct_id" as primary key');
+SELECT col_is_fk('alzheimer_subset.sponsors', 'nct_id', '"sponsors" must have "nct_id" as primary key');
+SELECT col_isnt_fk('alzheimer_subset.studies', 'nct_id', '"studies" not have "nct_id" as a foreign key');
 
 
 -- (8) Ensure that foreign key nct_id columns have no NULL values

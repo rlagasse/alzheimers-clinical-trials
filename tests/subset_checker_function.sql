@@ -1,4 +1,6 @@
 -- Subset checker help function. Used on all tables but studies as id column should be the primary key in all.
+DROP FUNCTION IF EXISTS subset_checker(text, text, text, text, text);
+
 CREATE OR REPLACE FUNCTION subset_checker (
 	subset text, 
     entireset text,
