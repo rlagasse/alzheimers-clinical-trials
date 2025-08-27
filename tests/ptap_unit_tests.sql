@@ -7,12 +7,12 @@ SET search_path TO alzheimer_subset, ctgov, public;
 BEGIN;
 
 -- Number of Tests to Run
-SELECT plan(46);
+SELECT plan(47);
 
 -- (1) Ensure the correct schemas are in place
 SELECT schemas_are(ARRAY[ 'public', 'ctgov', 'alzheimer_subset']);
  
--- (8) Validate all 8 necessary tables exist
+-- (9) Validate all 8 necessary tables exist
 SELECT has_table('alzheimer_subset.conditions', 'subset must have table "conditions"');
 SELECT has_table('alzheimer_subset.countries', 'subset must have table "countries"');
 SELECT has_table('alzheimer_subset.designs', 'subset must have table "designs"');
@@ -21,6 +21,7 @@ SELECT has_table('alzheimer_subset.interventions', 'subset must have table "inte
 SELECT has_table('alzheimer_subset.outcome_counts', 'subset must have table "outcome_counts"');
 SELECT has_table('alzheimer_subset.sponsors', 'subset must have table "sponsors"');
 SELECT has_table('alzheimer_subset.studies', 'subset must have table "studies"');
+SELECT is((SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'alzheimer_subset' AND table_type = 'BASE TABLE')::integer, 8::integer, 'Schema "alzheimer_subset" should only have 8 tables');
 
 -- (7) All tables (besides studies) should have a primary key to link to studies
 SELECT has_pk('alzheimer_subset', 'conditions', '"conditions" must have a primary key');
