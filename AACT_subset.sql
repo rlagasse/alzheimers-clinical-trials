@@ -10,83 +10,66 @@ DROP TABLE IF EXISTS alzheimer_subset.sponsors CASCADE;
 DROP TABLE IF EXISTS alzheimer_subset.studies CASCADE;
 
 -- -- Conditions (Alzheimer) 3136 rows
-CREATE TABLE IF NOT EXISTS alzheimer_subset.conditions (LIKE ctgov.conditions INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-
-INSERT INTO alzheimer_subset.conditions
+CREATE TABLE alzheimer_subset.conditions AS
 SELECT DISTINCT *
-FROM ctgov.conditions AS c
-WHERE c.name LIKE 'Alzheimer%'
-AND c.name NOT LIKE '%or&';
+FROM ctgov.conditions
+WHERE name LIKE 'Alzheimer%'
+  AND name NOT LIKE '%or&';
+
 
  -- Studies (3136 rows)
-CREATE TABLE IF NOT EXISTS alzheimer_subset.studies (LIKE ctgov.studies INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-
-INSERT INTO alzheimer_subset.studies
+CREATE TABLE alzheimer_subset.studies AS
 SELECT DISTINCT s.*
-FROM ctgov.studies AS s
-JOIN alzheimer_subset.conditions as c
-	ON s.nct_id = c.nct_id;
-
+FROM ctgov.studies s
+JOIN alzheimer_subset.conditions c
+  ON s.nct_id = c.nct_id;
 
 
 -- Countries of Study Origin
-CREATE TABLE IF NOT EXISTS alzheimer_subset.countries (LIKE ctgov.countries INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-
-INSERT INTO alzheimer_subset.countries
+CREATE TABLE alzheimer_subset.countries AS
 SELECT DISTINCT c.*
-FROM ctgov.countries AS c
-JOIN alzheimer_subset.studies AS s
+FROM ctgov.countries c
+JOIN alzheimer_subset.studies s
   ON c.nct_id = s.nct_id;
 
 
 -- Designs (Purpose of Study)
-CREATE TABLE IF NOT EXISTS alzheimer_subset.designs (LIKE ctgov.designs INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-
-INSERT INTO alzheimer_subset.designs
+CREATE TABLE alzheimer_subset.designs AS
 SELECT DISTINCT d.*
-FROM ctgov.designs AS d
-JOIN alzheimer_subset.studies AS s
+FROM ctgov.designs d
+JOIN alzheimer_subset.studies s
   ON d.nct_id = s.nct_id;
 
--- Facilities (City, State)
-CREATE TABLE IF NOT EXISTS alzheimer_subset.facilities (LIKE ctgov.facilities INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
 
-INSERT INTO alzheimer_subset.facilities
+-- Facilities (City, State)
+CREATE TABLE alzheimer_subset.facilities AS
 SELECT DISTINCT f.*
-FROM ctgov.facilities AS f
-JOIN alzheimer_subset.studies AS s
+FROM ctgov.facilities f
+JOIN alzheimer_subset.studies s
   ON f.nct_id = s.nct_id;
+  
 
 -- Interventions (Intervention Type)
-CREATE TABLE IF NOT EXISTS alzheimer_subset.interventions (LIKE ctgov.interventions INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-
-INSERT INTO alzheimer_subset.interventions
+CREATE TABLE alzheimer_subset.interventions AS
 SELECT DISTINCT i.*
-FROM ctgov.interventions AS i
-JOIN alzheimer_subset.studies AS s
+FROM ctgov.interventions i
+JOIN alzheimer_subset.studies s
   ON i.nct_id = s.nct_id;
 
-
 -- Study Outcome Counts of Participants
-CREATE TABLE IF NOT EXISTS alzheimer_subset.outcome_counts (LIKE ctgov.outcome_counts INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-
-INSERT INTO alzheimer_subset.outcome_counts
-SELECT DISTINCT c.*
-FROM ctgov.outcome_counts AS c
-JOIN alzheimer_subset.studies AS s
-  ON c.nct_id = s.nct_id;
+CREATE TABLE alzheimer_subset.outcome_counts AS
+SELECT DISTINCT oc.*
+FROM ctgov.outcome_counts oc
+JOIN alzheimer_subset.studies s
+  ON oc.nct_id = s.nct_id;
 
 
 -- Sponsors
-CREATE TABLE IF NOT EXISTS alzheimer_subset.sponsors (LIKE ctgov.sponsors INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-
-INSERT INTO alzheimer_subset.sponsors
-SELECT DISTINCT p.*
-FROM ctgov.sponsors AS p
-JOIN alzheimer_subset.studies AS s
-  ON p.nct_id = s.nct_id;
-
-
+CREATE TABLE alzheimer_subset.sponsors AS
+SELECT DISTINCT sp.*
+FROM ctgov.sponsors sp
+JOIN alzheimer_subset.studies s
+  ON sp.nct_id = s.nct_id;
 
 
 -- Creating constraints:

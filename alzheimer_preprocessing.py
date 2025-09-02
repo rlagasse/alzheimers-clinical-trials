@@ -6,6 +6,6 @@ engine = create_engine(
     connect_args={"sslmode":"require"}
 )
 
-df = pd.read_sql("SELECT * FROM alzheimer_subset.studies", engine)
+df = pd.read_sql("SELECT * FROM alzheimer_subset.conditions", engine)
 
 print(df)
