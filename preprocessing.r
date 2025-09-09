@@ -41,6 +41,59 @@ outcome_counts_cols <- c("nct_id", "outcome_id", "units", "count")
 sponsors_cols <- c("id", "nct_id", "name", "agency_class")
 studies_cols <- c("nct_id", "phase", "start_date", "completion_date", "overall_status", "enrollment", "study_type", "source")
 
+# Conditions: distinct not needed as there are database constraints for id/nct_id
+clean_conditions <- df_conditions %>% 
+  mutate(
+    name = replace(is.na(name), "Unknown"),
+  )
+
+
+# Countries
+clean_countries <- df_countries %>% 
+  mutate(
+  )
+
+# Designs
+clean_designs <- df_designs %>% 
+  mutate(
+  )
+
+# Facilities
+clean_facilities <- df_facilities %>% 
+  mutate(
+  )
+
+# Interventions
+clean_interventions <- df_interventions %>% 
+  mutate(
+  )
+
+# Outcome Counts
+clean_outcome_counts <- df_outcome_counts %>% 
+  mutate(
+  )
+
+# Sponsors
+clean_sponsors <- df_sponsors %>% 
+  mutate(
+  )
+
+
+# Studies: all studies are distinct
+clean_studies <- df_studies %>% 
+  distinct(nct_id, name, .keep_all = TRUE) %>%
+  mutate(
+    phase = replace(is.na(phase), "NA"),
+    start_date = replace(is.na(start_date), .asDate("1900-01-01")),
+    end_date = replace(is.na(end_date), .asDate("1900-01-01")),
+    overall_status = replace(is.na(overall_status), "UNKNOWN"),
+    enrollment = replace(is.na(enrollment), 0),
+    study_type = replace(is.na(study_type), "Unknown"),
+    source = replace(is.na(source), "Unknown"),
+  )
+
+
+
 
 
 
