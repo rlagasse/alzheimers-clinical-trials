@@ -110,13 +110,36 @@ clean_studies <- df_studies %>%
     phase = ifelse(is.na(phase) | phase %in% c("NA", "Unknown", ""), NA, phase),
     start_date = ifelse(is.na(start_date), as.Date("1900-01-01"), start_date),
     completion_date = ifelse(is.na(completion_date), as.Date("1900-01-01"), completion_date),
-    duration = completion_date - start_date
     overall_status = ifelse(is.na(overall_status) | overall_status %in% c("NA", "Unknown", ""), NA, overall_status),
     enrollment = ifelse(is.na(enrollment), 0, enrollment),
     study_type = ifelse(is.na(study_type) | study_type %in% c("NA", "Unknown", ""), NA, study_type),
-    source = ifelse(is.na(source) | source %in% c("NA", "Unknown", ""), NA, source)
+    source = ifelse(is.na(source) | source %in% c("NA", "Unknown", ""), NA, source),
+    
+    # Adding additional columns
+    duration_days = as.numeric(completion_date - start_date),
+    duration_months = (duration_days / 30),
+
+    # string identifier for trial enrollments 
+    enrollment_category = case_when(
+      enrollment < 10 ~ "<10",
+      enrollment >= 10 & enrollment < 20 ~ "10-19",
+      enrollment >= 20 & enrollment < 30 ~ "20-29", 
+      enrollment >= 30 & enrollment < 40 ~ "30-39",
+      enrollment >= 40 & enrollment < 50 ~ "40-49",
+      enrollment >= 50 & enrollment < 60 ~ "50-59",
+      enrollment >= 60 & enrollment < 70 ~ "60-69", 
+      enrollment >= 70 & enrollment < 80 ~ "70-79",
+      enrollment >= 80 & enrollment < 90 ~ "80-89",
+      enrollment >= 90 & enrollment < 100 ~ "90-99",
+      enrollment >= 100 & enrollment < 200 ~ "100-199",
+      enrollment >= 200 & enrollment < 500 ~ "200-499",
+      enrollment >= 500 & enrollment < 1000 ~ "599-999",
+      enrollment >= 1000 & enrollment < 2000 ~ "1000-1999",
+      enrollment >= 1000 & enrollment < 2000 ~ "2000-2999",
+      enrollment >= 2000 & enrollment < 5000 ~ "3000-4999",
+      enrollment >= 5000 & enrollment < 10000 ~ "5000-9999",
+      enrollment >= 10000 ~ ">=10000", 
+      )
   )
 
-
-
-DBI::dbDisconnect(con)
+dbDisconnect(con)
