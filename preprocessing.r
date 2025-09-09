@@ -113,7 +113,11 @@ clean_interventions <- df_interventions %>%
   mutate(
     name = ifelse(is.na(name) | name %in% c("NA", "Unknown", ""), NA, name),
     intervention_type = ifelse(is.na(intervention_type) | intervention_type %in% c("NA", "Unknown", ""), NA, intervention_type)
-  )
+  ) %>%
+
+  group_by(intervention_type) %>%
+  mutate(trials_per_intervention_type = n()) %>%
+  ungroup()
 
 
 # Outcome Counts
@@ -153,20 +157,20 @@ clean_studies <- df_studies %>%
   select(all_of(studies_cols)) %>%
   mutate(
     phase = ifelse(is.na(phase) | phase %in% c("NA", "Unknown", ""), NA, phase),
-    start_date = coalesce(as.Date("1900-01-01"), as.Date(start_date)),
-    completion_date = coalesce(as.Date("1900-01-01"), as.Date(completion_date)),
+    start_date = coalesce(as.Date(start_date), as.Date("1900-01-01")),
+    completion_date = coalesce(as.Date(completion_date), as.Date("1900-01-01")),
     overall_status = ifelse(is.na(overall_status) | overall_status %in% c("NA", "Unknown", ""), NA, overall_status),
-    enrollment = ifelse(is.na(enrollment), 0, enrollment),
+    enrollment = ifelse(is.na(enrollment), 0, as.numeric(enrollment)),
     study_type = ifelse(is.na(study_type) | study_type %in% c("NA", "Unknown", ""), NA, study_type),
     source = ifelse(is.na(source) | source %in% c("NA", "Unknown", ""), NA, source),
     
     # Adding additional columns and dates, months, years for studies
     duration_days = as.numeric(completion_date - start_date),
     duration_months = (duration_days / 30),
-    start_year = format(start_date, "%Y"),
-    start_month = format(start_date, "%m"),
-    completion_year = format(completion_date, "%Y"),
-    completion_month = format(completion_date, "%m"),
+    start_year = as.numeric(format(start_date, "%Y")),
+    start_month = as.numeric(format(start_date, "%m")),
+    completion_year = as.numeric(format(completion_date, "%Y")),
+    completion_month = as.numeric(format(completion_date, "%m")),
 
     # string identifier for trial enrollments 
     enrollment_category = case_when(
@@ -210,5 +214,17 @@ clean_studies <- df_studies %>%
     group_by(study_type) %>%
     mutate(enrollment_per_study_type = n()) %>%
     ungroup()
+
+# write all dataframes to .csv files
+write.csv(clean_conditions, "../clinical_trial_data/conditions.csv", row.names = FALSE)
+write.csv(clean_countries, "../clinical_trial_data/countries.csv", row.names = FALSE)
+write.csv(clean_designs, "../clinical_trial_data/designs.csv", row.names = FALSE)
+write.csv(clean_facilities, "../clinical_trial_data/facilities.csv", row.names = FALSE)
+write.csv(clean_interventions, "../clinical_trial_data/interventions.csv", row.names = FALSE)
+write.csv(clean_outcome_counts, "../clinical_trial_data/outcome_counts.csv", row.names = FALSE)
+write.csv(clean_sponsors, "../clinical_trial_data/sponsors.csv", row.names = FALSE)
+write.csv(clean_studies, "../clinical_trial_data/studies.csv", row.names = FALSE)
+
+
 
 dbDisconnect(con)
