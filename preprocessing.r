@@ -48,7 +48,10 @@ studies_cols <- c("nct_id", "phase", "start_date", "completion_date", "overall_s
 clean_conditions <- df_conditions %>% 
   select(all_of(conditions_cols)) %>% 
   distinct(nct_id, name, .keep_all=TRUE) %>%
-  mutate(name = ifelse(is.na(name) | name %in% c("NA", "Unknown", ""), NA, name))
+  mutate(
+    name = ifelse(is.na(name) | name %in% c("NA", "Unknown", ""), NA, name),
+    disease_name = "Alzheimer's Disease"
+  )
 
 
 
@@ -56,9 +59,12 @@ clean_conditions <- df_conditions %>%
 clean_countries <- df_countries %>%
   select(all_of(countries_cols)) %>%
   distinct(nct_id, name, .keep_all=TRUE) %>%
-  mutate(name = ifelse(is.na(name) | name %in% c("NA", "Unknown", ""), NA, name)) %>%
+  mutate(
+    name = case_when(
+      is.na(name) | name %in% c("NA", "Unknown", "") ~ NA,
+      name == "Korea, Republic of" ~ "South Korea",
+      TRUE ~ name)) %>%
     ungroup() %>%
-
   group_by(name) %>%
   mutate(trials_per_country = n()) %>%
   ungroup()
