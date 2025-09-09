@@ -4,6 +4,7 @@ install.packages("dplyr")
 
 library(DBI)
 library(RPostgres)
+library(dplyr)
 
 
 con <- dbConnect(
@@ -18,8 +19,10 @@ con <- dbConnect(
 
 # Schema alzheimer_subset alias
 subset_query <- function(table) {
-  DBI::dbGetQuery(con, paste0("SELECT * FROM alzheimer_subset.", table))
+  dbGetQuery(con, paste0("SELECT * FROM alzheimer_subset.", table))
 }
+
+
 
 # Process all tables into dataframes
 df_conditions <- subset_query("conditions")
@@ -41,59 +44,78 @@ outcome_counts_cols <- c("nct_id", "outcome_id", "units", "count")
 sponsors_cols <- c("id", "nct_id", "name", "agency_class")
 studies_cols <- c("nct_id", "phase", "start_date", "completion_date", "overall_status", "enrollment", "study_type", "source")
 
-# Conditions: distinct not needed as there are database constraints for id/nct_id
 clean_conditions <- df_conditions %>% 
+  distinct(nct_id, name, .keep_all=TRUE) %>%
   mutate(
-    name = replace(is.na(name), "Unknown"),
+    name = ifelse(is.na(name) | name %in% c("NA", "Unknown", ""), NA, name)
   )
 
-
 # Countries
-clean_countries <- df_countries %>% 
+clean_countries <- df_countries %>%
+  distinct(nct_id, name, .keep_all=TRUE) %>%
   mutate(
+    name = ifelse(is.na(name) | name %in% c("NA", "Unknown", ""), NA, name)
   )
 
 # Designs
 clean_designs <- df_designs %>% 
+  distinct(nct_id, allocation, primary_purpose, .keep_all=TRUE) %>%
   mutate(
+    allocation = ifelse(is.na(allocation) | allocation %in% c("NA", "Unknown", ""), NA, allocation),
+    primary_purpose = ifelse(is.na(primary_purpose) | primary_purpose %in% c("NA", "Unknown", ""), NA, primary_purpose)
   )
+
 
 # Facilities
 clean_facilities <- df_facilities %>% 
+  distinct(nct_id, name, city, country, .keep_all=TRUE) %>%
   mutate(
+    name = ifelse(is.na(name) | name %in% c("NA", "Unknown", ""), NA, name),
+    city = ifelse(is.na(city) | city %in% c("NA", "Unknown", ""), NA, city),
+    state = ifelse(is.na(state) | state %in% c("NA", "Unknown", ""), NA, state),
+    country = ifelse(is.na(country) | country %in% c("NA", "Unknown", ""), NA, country),
+    latitude = ifelse(is.na(latitude), NA, latitude),
+    longitude = ifelse(is.na(country), NA, longitude)
   )
+
 
 # Interventions
 clean_interventions <- df_interventions %>% 
+  distinct(nct_id, name, .keep_all=TRUE) %>%
   mutate(
+    name = ifelse(is.na(name) | name %in% c("NA", "Unknown", ""), NA, name),
+    intervention_type = ifelse(is.na(intervention_type) | intervention_type %in% c("NA", "Unknown", ""), NA, intervention_type)
   )
 
 # Outcome Counts
 clean_outcome_counts <- df_outcome_counts %>% 
+  distinct(nct_id, outcome_id, .keep_all=TRUE) %>%
   mutate(
+    units = ifelse(is.na(units) | units %in% c("NA", "Unknown", ""), NA, units),
+    count = ifelse(is.na(count), 0, count)
   )
 
 # Sponsors
 clean_sponsors <- df_sponsors %>% 
+  distinct(nct_id, name, .keep_all=TRUE) %>%
   mutate(
+    name = ifelse(is.na(name) | name %in% c("NA", "Unknown", ""), NA, name),
+    agency_class = ifelse(is.na(agency_class) | agency_class %in% c("NA", "Unknown", ""), NA, agency_class)
   )
 
 
 # Studies: all studies are distinct
 clean_studies <- df_studies %>% 
-  distinct(nct_id, name, .keep_all = TRUE) %>%
   mutate(
-    phase = replace(is.na(phase), "NA"),
-    start_date = replace(is.na(start_date), .asDate("1900-01-01")),
-    end_date = replace(is.na(end_date), .asDate("1900-01-01")),
-    overall_status = replace(is.na(overall_status), "UNKNOWN"),
-    enrollment = replace(is.na(enrollment), 0),
-    study_type = replace(is.na(study_type), "Unknown"),
-    source = replace(is.na(source), "Unknown"),
+    phase = ifelse(is.na(phase) | phase %in% c("NA", "Unknown", ""), NA, phase),
+    start_date = ifelse(is.na(start_date), as.Date("1900-01-01"), start_date),
+    completion_date = ifelse(is.na(completion_date), as.Date("1900-01-01"), completion_date),
+    duration = completion_date - start_date
+    overall_status = ifelse(is.na(overall_status) | overall_status %in% c("NA", "Unknown", ""), NA, overall_status),
+    enrollment = ifelse(is.na(enrollment), 0, enrollment),
+    study_type = ifelse(is.na(study_type) | study_type %in% c("NA", "Unknown", ""), NA, study_type),
+    source = ifelse(is.na(source) | source %in% c("NA", "Unknown", ""), NA, source)
   )
-
-
-
 
 
 
