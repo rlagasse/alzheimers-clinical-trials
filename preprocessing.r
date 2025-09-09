@@ -108,16 +108,20 @@ clean_sponsors <- df_sponsors %>%
 clean_studies <- df_studies %>% 
   mutate(
     phase = ifelse(is.na(phase) | phase %in% c("NA", "Unknown", ""), NA, phase),
-    start_date = ifelse(is.na(start_date), as.Date("1900-01-01"), start_date),
-    completion_date = ifelse(is.na(completion_date), as.Date("1900-01-01"), completion_date),
+    start_date = coalesce(as.Date("1900-01-01"), as.Date(start_date)),
+    completion_date = coalesce(as.Date("1900-01-01"), as.Date(completion_date)),
     overall_status = ifelse(is.na(overall_status) | overall_status %in% c("NA", "Unknown", ""), NA, overall_status),
     enrollment = ifelse(is.na(enrollment), 0, enrollment),
     study_type = ifelse(is.na(study_type) | study_type %in% c("NA", "Unknown", ""), NA, study_type),
     source = ifelse(is.na(source) | source %in% c("NA", "Unknown", ""), NA, source),
     
-    # Adding additional columns
+    # Adding additional columns and dates, months, years for studies
     duration_days = as.numeric(completion_date - start_date),
     duration_months = (duration_days / 30),
+    start_year = format(start_date, "%Y"),
+    start_month = format(start_date, "%m"),
+    completion_year = format(completion_date, "%Y"),
+    completion_month = format(completion_date, "%m"),
 
     # string identifier for trial enrollments 
     enrollment_category = case_when(
@@ -135,11 +139,35 @@ clean_studies <- df_studies %>%
       enrollment >= 200 & enrollment < 500 ~ "200-499",
       enrollment >= 500 & enrollment < 1000 ~ "599-999",
       enrollment >= 1000 & enrollment < 2000 ~ "1000-1999",
-      enrollment >= 1000 & enrollment < 2000 ~ "2000-2999",
-      enrollment >= 2000 & enrollment < 5000 ~ "3000-4999",
+      enrollment >= 2000 & enrollment < 3000 ~ "2000-2999",
+      enrollment >= 3000 & enrollment < 5000 ~ "3000-4999",
       enrollment >= 5000 & enrollment < 10000 ~ "5000-9999",
       enrollment >= 10000 ~ ">=10000", 
-      )
-  )
+      ),
+
+    # add flag for ongoing and finished trials. 1 for trial finished, 0 for trial ongoing
+    trial_is_complete = ifelse(overall_status %in% c("COMPLETED", "TERMINATED"), 1, 0)
+  ) %>%
+
+    # aggregates with other tables. trials per phase, enrollment per phrase, trials per year
+    group_by(phase) %>%
+    mutate(
+      trials_per_phase = n(),
+      avg_enrollment_per_phase = mean(enrollment),
+    ) %>%
+
+    ungroup() %>%
+
+    group_by(start_year) %>%
+    mutate(
+      trials_per_year = n()
+    ) %>%
+    ungroup()
+
+    group_by(study_type) %>%
+    mutate(
+      enrollment_per_study_type = n()
+    ) %>%
+    ungroup()
 
 dbDisconnect(con)
