@@ -36,7 +36,7 @@ df_studies <- subset_query("studies")
 
 # Columns to keep & analyze for each dataframe
 conditions_cols <- c("id", "nct_id", "name")
-countries_cols <- c("id,", "nct_id", "name")
+countries_cols <- c("id", "nct_id", "name")
 designs_cols <- c("id", "nct_id", "allocation", "primary_purpose")
 facilities_cols <- c("id", "nct_id", "name", "city", "state", "country", "latitude", "longitude")
 interventions_cols <- c("id", "nct_id", "intervention_type", "name")
@@ -44,31 +44,45 @@ outcome_counts_cols <- c("nct_id", "outcome_id", "units", "count")
 sponsors_cols <- c("id", "nct_id", "name", "agency_class")
 studies_cols <- c("nct_id", "phase", "start_date", "completion_date", "overall_status", "enrollment", "study_type", "source")
 
+
 clean_conditions <- df_conditions %>% 
+  select(all_of(conditions_cols)) %>% 
   distinct(nct_id, name, .keep_all=TRUE) %>%
-  mutate(
-    name = ifelse(is.na(name) | name %in% c("NA", "Unknown", ""), NA, name)
-  )
+  mutate(name = ifelse(is.na(name) | name %in% c("NA", "Unknown", ""), NA, name))
+
+
 
 # Countries
 clean_countries <- df_countries %>%
+  select(all_of(countries_cols)) %>%
   distinct(nct_id, name, .keep_all=TRUE) %>%
-  mutate(
-    name = ifelse(is.na(name) | name %in% c("NA", "Unknown", ""), NA, name)
-  )
+  mutate(name = ifelse(is.na(name) | name %in% c("NA", "Unknown", ""), NA, name)) %>%
+    ungroup() %>%
+
+  group_by(name) %>%
+  mutate(trials_per_country = n()) %>%
+  ungroup()
+
 
 # Designs
 clean_designs <- df_designs %>% 
+  select(all_of(designs_cols)) %>%
   distinct(nct_id, allocation, primary_purpose, .keep_all=TRUE) %>%
   mutate(
     allocation = ifelse(is.na(allocation) | allocation %in% c("NA", "Unknown", ""), NA, allocation),
     primary_purpose = ifelse(is.na(primary_purpose) | primary_purpose %in% c("NA", "Unknown", ""), NA, primary_purpose)
-  )
+  ) %>%
+    ungroup() %>%
+
+  group_by(primary_purpose) %>%
+  mutate(trials_per_primary_purpose = n()) %>%
+  ungroup()
 
 
 # Facilities
-clean_facilities <- df_facilities %>% 
-  distinct(nct_id, name, city, country, .keep_all=TRUE) %>%
+clean_facilities <- df_facilities %>%
+  select(all_of(facilities_cols)) %>%
+  distinct() %>%
   mutate(
     name = ifelse(is.na(name) | name %in% c("NA", "Unknown", ""), NA, name),
     city = ifelse(is.na(city) | city %in% c("NA", "Unknown", ""), NA, city),
@@ -76,36 +90,67 @@ clean_facilities <- df_facilities %>%
     country = ifelse(is.na(country) | country %in% c("NA", "Unknown", ""), NA, country),
     latitude = ifelse(is.na(latitude), NA, latitude),
     longitude = ifelse(is.na(country), NA, longitude)
-  )
+  ) %>%
+    ungroup() %>%
+
+  group_by(country) %>%
+  mutate(facilities_per_country = n()) %>%
+  ungroup()%>%
+
+  group_by(city) %>%
+  mutate(facilities_per_city = n()) %>%
+  ungroup() %>%
+
+  group_by(name) %>%
+  mutate(trials_per_facility = n()) %>%
+  ungroup()
 
 
 # Interventions
 clean_interventions <- df_interventions %>% 
+  select(all_of(interventions_cols)) %>%
   distinct(nct_id, name, .keep_all=TRUE) %>%
   mutate(
     name = ifelse(is.na(name) | name %in% c("NA", "Unknown", ""), NA, name),
     intervention_type = ifelse(is.na(intervention_type) | intervention_type %in% c("NA", "Unknown", ""), NA, intervention_type)
   )
 
+
 # Outcome Counts
 clean_outcome_counts <- df_outcome_counts %>% 
+  select(all_of(outcome_counts_cols)) %>%
   distinct(nct_id, outcome_id, .keep_all=TRUE) %>%
   mutate(
     units = ifelse(is.na(units) | units %in% c("NA", "Unknown", ""), NA, units),
     count = ifelse(is.na(count), 0, count)
   )
 
+
 # Sponsors
 clean_sponsors <- df_sponsors %>% 
+  select(all_of(sponsors_cols)) %>%
   distinct(nct_id, name, .keep_all=TRUE) %>%
   mutate(
     name = ifelse(is.na(name) | name %in% c("NA", "Unknown", ""), NA, name),
     agency_class = ifelse(is.na(agency_class) | agency_class %in% c("NA", "Unknown", ""), NA, agency_class)
-  )
+  ) %>%
+
+  group_by(agency_class) %>%
+  mutate(trials_per_agency_class = n()) %>%
+  ungroup()%>%
+
+  group_by(nct_id) %>%
+  mutate(sponsors_per_trial = n()) %>%
+  ungroup() %>%
+
+  group_by(name) %>%
+  mutate(trials_per_sponsor = n()) %>%
+  ungroup()
 
 
 # Studies: all studies are distinct
 clean_studies <- df_studies %>% 
+  select(all_of(studies_cols)) %>%
   mutate(
     phase = ifelse(is.na(phase) | phase %in% c("NA", "Unknown", ""), NA, phase),
     start_date = coalesce(as.Date("1900-01-01"), as.Date(start_date)),
@@ -159,15 +204,11 @@ clean_studies <- df_studies %>%
     ungroup() %>%
 
     group_by(start_year) %>%
-    mutate(
-      trials_per_year = n()
-    ) %>%
-    ungroup()
+    mutate(trials_per_year = n()) %>%
+    ungroup() %>%
 
     group_by(study_type) %>%
-    mutate(
-      enrollment_per_study_type = n()
-    ) %>%
+    mutate(enrollment_per_study_type = n()) %>%
     ungroup()
 
 dbDisconnect(con)
