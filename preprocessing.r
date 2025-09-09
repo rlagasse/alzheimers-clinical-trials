@@ -129,7 +129,7 @@ clean_interventions <- df_interventions %>%
 # Outcome Counts
 clean_outcome_counts <- df_outcome_counts %>% 
   select(all_of(outcome_counts_cols)) %>%
-  distinct(nct_id, outcome_id, .keep_all=TRUE) %>%
+  distinct() %>%
   mutate(
     units = ifelse(is.na(units) | units %in% c("NA", "Unknown", ""), NA, units),
     count = ifelse(is.na(count), 0, count)
