@@ -60,10 +60,7 @@ clean_countries <- df_countries %>%
   select(all_of(countries_cols)) %>%
   distinct(nct_id, name, .keep_all=TRUE) %>%
   mutate(
-    name = case_when(
-      is.na(name) | name %in% c("NA", "Unknown", "") ~ NA,
-      name == "Korea, Republic of" ~ "South Korea",
-      TRUE ~ name)) %>%
+    name = case_when(is.na(name) | name %in% c("NA", "Unknown", "") ~ NA, name == "Korea, Republic of" ~ "South Korea", TRUE ~ name)) %>%
     ungroup() %>%
   group_by(name) %>%
   mutate(trials_per_country = n()) %>%
@@ -231,6 +228,7 @@ write.csv(clean_outcome_counts, "../clinical_trial_data/outcome_counts.csv", row
 write.csv(clean_sponsors, "../clinical_trial_data/sponsors.csv", row.names = FALSE)
 write.csv(clean_studies, "../clinical_trial_data/studies.csv", row.names = FALSE)
 
-
+library(testthat)
+test_dir("tests")
 
 dbDisconnect(con)
